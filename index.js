@@ -133,6 +133,16 @@ async function run() {
             res.json(result)
         })
 
+        app.get('/ideasbycreator/:creatorId', verifyToken, async (req, res) => {
+            const { creatorId } = req.params;
+            const result = await ideaCollection
+                .find({ creatorId: creatorId })
+                .toArray();
+            res.json(result);
+        });
+
+        //idea title only for comment display
+
         app.get('/ideaname/:id', async (req, res) => {
             const id = req.params.id;
             const result = await ideaCollection.findOne(
