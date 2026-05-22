@@ -15,7 +15,11 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (
+            !origin ||
+            origin.includes("vercel.app") ||
+            origin.includes("localhost")
+        ) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
@@ -34,9 +38,6 @@ app.listen(port, () => {
 })
 
 
-
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
@@ -74,7 +75,7 @@ const JWKS = createRemoteJWKSet(
 
 async function run() {
     try {
-
+        //deleting before deplyyment
         // await client.connect();
 
         const db = client.db("ideavault")
@@ -84,9 +85,9 @@ async function run() {
 
         const verifyToken = async (req, res, next) => {
 
-            //pass everything for now
-            next()
-            return;
+            // //pass everything for now
+            // next()
+            // return;
 
             const authHeader = req?.headers.authorization
             if (!authHeader) {
@@ -161,7 +162,7 @@ async function run() {
         });
 
         //idea title only for comment display
-
+        //no need for verify token as this is public info
         app.get('/ideaname/:id', async (req, res) => {
             const id = req.params.id;
             const result = await ideaCollection.findOne(
