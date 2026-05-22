@@ -9,7 +9,20 @@ const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
 const uri = process.env.MONGODB_URI
 const port = process.env.PORT
 
-app.use(cors())
+const allowedOrigins = [
+    process.env.CLIENT_URL,
+];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+}));
 app.use(express.json())
 
 app.get('/', (req, res) => {
@@ -120,6 +133,15 @@ async function run() {
             res.json(result)
         })
 
+        app.get('/ideaname/:id', async (req, res) => {
+            const id = req.params.id;
+            const result = await ideaCollection.findOne(
+                { _id: new ObjectId(id) },
+                { projection: { ideaTitle: 1, _id: 0 } }  // only return title
+            );
+            res.json({ title: result?.ideaTitle ?? "Unknown Idea" });
+        });
+
         app.delete('/idea/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
 
@@ -163,11 +185,25 @@ async function run() {
         app.get('/comment/:ideaId', verifyToken, async (req, res) => {
             const { ideaId } = req.params;
             const result = await commentCollection.find({
-                ideaId: new ObjectId(ideaId),
+                ideaId: ideaId,
             }).toArray();
-
+            console.log(result);
             res.json(result);
         })
+
+        app.get('/commentbyuser/:userId', verifyToken, async (req, res) => {
+            const { userId } = req.params;
+            const result = await commentCollection
+                .find({ userId: userId })
+                .sort({ time: -1 })  // descending
+                .toArray();
+            res.json(result);
+        });
+
+        app.get('/idea/:id', async (req, res) => {
+            const result = await ideaCollection.findOne({ _id: new ObjectId(req.params.id) });
+            res.json(result);
+        });
 
         app.delete('/comment/:commentid', verifyToken, async (req, res) => {
             const commentid = req.params.commentid;
