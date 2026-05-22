@@ -203,7 +203,17 @@ async function run() {
         })
 
         //comment stuff
-
+        // {
+        //   "_id": {
+        //     "$oid": "6a1069acb611d904db68e30c"
+        //   },
+        //   "ideaId": "6a1067abb611d904db68e307",
+        //   "userId": "6a0ed2b579d3851d642087d4",
+        //   "userName": "Akash",
+        //   "comment": "Damn, it's so stupid",
+        //   "like": 0,
+        //   "time": "2026-05-22T14:35:22.381Z"
+        // }
         app.post('/comment', verifyToken, async (req, res) => {
             const commentData = req.body
 
