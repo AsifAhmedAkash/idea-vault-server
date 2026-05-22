@@ -117,12 +117,31 @@ async function run() {
 
         }
 
+        // app.get('/idea', async (req, res) => {
+
+        //     const result = await ideaCollection.find().toArray()
+
+        //     res.json(result)
+        // })
+
         app.get('/idea', async (req, res) => {
+            const limit = req.query.limit ? parseInt(req.query.limit) : 0;
+            const search = req.query.search || "";
+            const category = req.query.category || "";
 
-            const result = await ideaCollection.find().toArray()
+            const query = {};
 
-            res.json(result)
-        })
+            if (search) {
+                query.ideaTitle = { $regex: search, $options: "i" };
+            }
+
+            if (category) {
+                query.category = category;
+            }
+
+            const result = await ideaCollection.find(query).limit(limit).toArray();
+            res.json(result);
+        });
 
         app.get('/idea/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
@@ -187,7 +206,7 @@ async function run() {
         app.post('/comment', verifyToken, async (req, res) => {
             const commentData = req.body
 
-            const result = commentCollection.insertOne(commentData)
+            const result = await commentCollection.insertOne(commentData)
 
             res.json(result)
         })
@@ -212,6 +231,16 @@ async function run() {
 
         app.get('/idea/:id', async (req, res) => {
             const result = await ideaCollection.findOne({ _id: new ObjectId(req.params.id) });
+            res.json(result);
+        });
+
+        app.patch('/comment/:id', verifyToken, async (req, res) => {
+            const { id } = req.params;
+            const { comment } = req.body;
+            const result = await commentCollection.updateOne(
+                { _id: new ObjectId(id) },
+                { $set: { comment } }
+            );
             res.json(result);
         });
 
